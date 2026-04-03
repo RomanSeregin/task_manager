@@ -46,8 +46,11 @@
             <p><strong>Срок:</strong> {{ task.due_date }}</p>
 
             <a href="{% url 'task_detail' task.id %}" class="btn btn-info">Подробнее</a>
-            <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Редактировать</a>
-            <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Удалить</a>
+
+            {% if task.user == request.user %}
+                <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Редактировать</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
         </div>
     </div>
 {% empty %}

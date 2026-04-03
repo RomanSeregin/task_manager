@@ -15,7 +15,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     context_object_name = 'tasks'
 
     def get_queryset(self):
-        queryset = Task.objects.filter(user=self.request.user)
+        queryset = Task.objects.all()
 
         status = self.request.GET.get('status')
         priority = self.request.GET.get('priority')
@@ -54,7 +54,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.user != self.request.user:
-            raise PermissionDenied  # если не владелец — запрет
+            raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
 class TaskDeleteView(LoginRequiredMixin, DeleteView):

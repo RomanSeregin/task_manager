@@ -6,16 +6,65 @@
 </head>
 <body>
 
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'task_list' %}">Task Manager</a>
+
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto align-items-center">
+
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-link">Привет, {{ user.username }} 👋</span>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'task_create' %}">
+                            + Задача
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline ms-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                Выйти
+                            </button>
+                        </form>
+                    </li>
+
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'login' %}">
+                            Войти
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'register' %}">
+                            Регистрация
+                        </a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
 <div class="container mt-4">
-    <h1 class="mb-4">Менеджер задач</h1>
 
-    <a href="{% url 'task_list' %}" class="btn btn-primary mb-3">Главная</a>
-    <a href="{% url 'task_create' %}" class="btn btn-success mb-3">Создать задачу</a>
-
-    <hr>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
     {% block content %}
     {% endblock %}
+
 </div>
 
 </body>
