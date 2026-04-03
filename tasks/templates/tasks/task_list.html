@@ -1,0 +1,57 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+
+<h2>Список задач</h2>
+
+<!-- 🔍 Фильтр -->
+<form method="get" class="mb-4">
+
+    <select name="status" class="form-control mb-2">
+        <option value="">Все статусы</option>
+        <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>Новое</option>
+        <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В процессе</option>
+        <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>Выполнено</option>
+    </select>
+
+    <select name="priority" class="form-control mb-2">
+        <option value="">Все приоритеты</option>
+        <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Низкий</option>
+        <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Средний</option>
+        <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>Высокий</option>
+    </select>
+
+    <input type="date" name="due_date" class="form-control mb-2"
+           value="{{ request.GET.due_date }}">
+
+    <button type="submit" class="btn btn-primary">Фильтровать</button>
+    <a href="{% url 'task_list' %}" class="btn btn-secondary">Сбросить</a>
+
+</form>
+
+{% if task.user == request.user %}
+    <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Удалить</a>
+{% endif %}
+
+<!-- 📋 Список задач -->
+{% for task in tasks %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>{{ task.title }}</h5>
+            <p>{{ task.description }}</p>
+
+            <p><strong>Статус:</strong> {{ task.status }}</p>
+            <p><strong>Приоритет:</strong> {{ task.priority }}</p>
+            <p><strong>Срок:</strong> {{ task.due_date }}</p>
+
+            <a href="{% url 'task_detail' task.id %}" class="btn btn-info">Подробнее</a>
+            <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Редактировать</a>
+            <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Удалить</a>
+        </div>
+    </div>
+{% empty %}
+    <p>Нет задач</p>
+{% endfor %}
+
+{% endblock %}

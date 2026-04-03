@@ -1,0 +1,38 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+
+<h2>{{ task.title }}</h2>
+
+<p>{{ task.description }}</p>
+<p>Статус: {{ task.status }}</p>
+<p>Приоритет: {{ task.priority }}</p>
+<p>Срок: {{ task.due_date }}</p>
+
+<hr>
+
+<h4>Комментарии</h4>
+
+{% for comment in comments %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <strong>{{ comment.user }}</strong>
+            <p>{{ comment.text }}</p>
+        </div>
+    </div>
+{% empty %}
+    <p>Нет комментариев</p>
+{% endfor %}
+
+<hr>
+
+<h4>Добавить комментарий</h4>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Отправить</button>
+</form>
+
+{% endblock %}
