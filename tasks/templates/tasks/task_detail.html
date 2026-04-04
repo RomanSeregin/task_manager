@@ -5,12 +5,19 @@
 <h2>{{ task.title }}</h2>
 
 <p>{{ task.description }}</p>
-<p>Статус: {{ task.status }}</p>
-<p>Приоритет: {{ task.priority }}</p>
-<p>Срок: {{ task.due_date }}</p>
+<p><strong>Статус:</strong> {{ task.status }}</p>
+<p><strong>Приоритет:</strong> {{ task.priority }}</p>
+<p><strong>Срок:</strong> {{ task.due_date }}</p>
+
+<!-- 🔐 Кнопки редактирования -->
+{% if request.user == task.user or request.user in task.admins.all %}
+    <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Редактировать</a>
+    <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">Удалить</a>
+{% endif %}
 
 <hr>
 
+<!-- 💬 Комментарии -->
 <h4>Комментарии</h4>
 
 {% for comment in comments %}
@@ -18,21 +25,58 @@
         <div class="card-body">
             <strong>{{ comment.user }}</strong>
             <p>{{ comment.text }}</p>
+
+            {% if request.user == comment.user %}
+                <a href="{% url 'edit_comment' comment.id %}" class="btn btn-warning btn-sm">
+                    Редактировать
+                </a>
+
+                <a href="{% url 'delete_comment' comment.id %}" class="btn btn-danger btn-sm">
+                    Удалить
+                </a>
+            {% endif %}
         </div>
     </div>
-{% empty %}
-    <p>Нет комментариев</p>
 {% endfor %}
-
-<hr>
-
-<h4>Добавить комментарий</h4>
 
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-
     <button type="submit" class="btn btn-primary">Отправить</button>
 </form>
+
+<hr>
+
+<!-- 👑 Администраторы задачи -->
+<h4>Администраторы задачи</h4>
+
+<ul>
+    {% for admin in task.admins.all %}
+        <li>
+            {{ admin.username }}
+
+            {% if request.user == task.user %}
+                <a href="{% url 'remove_task_admin' task.id admin.id %}" class="btn btn-danger btn-sm">
+                    Убрать
+                </a>
+            {% endif %}
+        </li>
+    {% empty %}
+        <p>Нет администраторов</p>
+    {% endfor %}
+</ul>
+
+<!-- ➕ Добавление админов -->
+{% if request.user == task.user %}
+    <h5>Добавить администратора</h5>
+
+    {% for user in users %}
+        {% if user != task.user and user not in task.admins.all %}
+            <a href="{% url 'add_task_admin' task.id user.id %}" class="btn btn-warning btn-sm mb-1">
+                {{ user.username }}
+            </a>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% endblock %}

@@ -24,6 +24,14 @@
                         </a>
                     </li>
 
+                    {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'user_list' %}">
+                                Пользователи
+                            </a>
+                        </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <form method="post" action="{% url 'logout' %}" class="d-inline ms-2">
                             {% csrf_token %}

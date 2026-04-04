@@ -24,6 +24,8 @@ class Task(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    admins = models.ManyToManyField(User, related_name='admin_tasks', blank=True)
+
     def __str__(self):
         return self.title
     

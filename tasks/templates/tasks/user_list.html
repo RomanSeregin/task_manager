@@ -1,0 +1,36 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+
+<h2>Пользователи</h2>
+
+<table class="table">
+    <tr>
+        <th>Имя</th>
+        <th>Админ</th>
+        <th>Действие</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>
+            {% if user.is_staff %}
+                ✅
+            {% else %}
+                ❌
+            {% endif %}
+        </td>
+        <td>
+            {% if user != request.user %}
+                <a href="{% url 'toggle_admin' user.id %}" class="btn btn-warning btn-sm">
+                    Переключить роль
+                </a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+{% endblock %}
