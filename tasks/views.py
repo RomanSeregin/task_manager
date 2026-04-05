@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from .models import Notification
 
 
 # 📋 Список задач
@@ -111,7 +112,9 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        create_notification(self.request.user, f"Задача создана: {form.instance.title}")
+        return response
 
 class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
@@ -152,7 +155,7 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['comments'] = self.object.comments.all()
         context['form'] = CommentForm()
-        context['users'] = User.objects.all()  # 👈 важно
+        context['users'] = User.objects.all()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -165,12 +168,34 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
             comment.user = request.user
             comment.save()
 
+            # 🔔 уведомление владельцу задачи, если это не он
+            if self.object.user != request.user:
+                create_notification(
+                    self.object.user,
+                    f"Новый комментарий к вашей задаче: {self.object.title}"
+                )
+
+            # 🔔 уведомление админам задачи (кроме автора комментария)
+            for admin in self.object.admins.exclude(id=request.user.id):
+                create_notification(
+                    admin,
+                    f"Новый комментарий к задаче {self.object.title} от {request.user.username}"
+                )
+
         return redirect('task_detail', pk=self.object.pk)
     
 class RegisterView(CreateView):
     form_class = UserCreationForm
     template_name = 'tasks/register.html'
     success_url = reverse_lazy('login')
+
+class NotificationListView(ListView):
+    model = Notification
+    template_name = 'tasks/notifications.html'
+    context_object_name = 'notifications'
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 def add_task_admin(request, task_id, user_id):
@@ -182,7 +207,7 @@ def add_task_admin(request, task_id, user_id):
 
     user = User.objects.get(id=user_id)
     task.admins.add(user)
-
+    create_notification(user, f"Вы стали администратором задачи: {task.title}")
     return redirect('task_detail', pk=task.id)
 
 
@@ -232,7 +257,7 @@ def mark_done(request, pk):
     if request.user == task.user or request.user in task.admins.all() or request.user.is_staff:
         task.status = 'done'
         task.save()
-
+    create_notification(task.user, f"Задача выполнена: {task.title}")
     return redirect('task_list')
 
 def get_context_data(self, **kwargs):
@@ -244,3 +269,28 @@ def get_context_data(self, **kwargs):
     context['new'] = Task.objects.filter(status='new').count()
 
     return context
+
+def create_notification(user, message):
+    Notification.objects.create(user=user, message=message)
+
+def post(self, request, *args, **kwargs):
+    self.object = self.get_object()
+    form = CommentForm(request.POST)
+
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.task = self.object
+        comment.user = request.user
+        comment.save()
+        
+        # уведомляем владельца задачи, если комментирует не он
+        if self.object.user != request.user:
+            create_notification(self.object.user,
+                f"Новый комментарий к вашей задаче: {self.object.title}")
+        
+        # уведомляем админов задачи
+        for admin in self.object.admins.exclude(id=request.user.id):
+            create_notification(admin,
+                f"Новый комментарий к задаче {self.object.title} от {request.user.username}")
+
+    return redirect('task_detail', pk=self.object.pk)

@@ -2,6 +2,52 @@
 
 {% block content %}
 
+<style>
+/* ✨ Сделать карточки комментариев прозрачными */
+.card {
+    background: rgba(255, 255, 255, 0.05) !important; /* прозрачный тёмный фон */
+    color: #e5e7eb !important; /* светлый текст */
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ✨ Текст комментариев */
+.card-body p,
+.card-body strong {
+    color: #e5e7eb !important;
+}
+
+/* ✨ Форма комментариев */
+form input,
+form textarea,
+form select {
+    background: rgba(255,255,255,0.05) !important;
+    color: #e5e7eb !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+    border-radius: 8px;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+form input::placeholder,
+form textarea::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+form input:focus,
+form textarea:focus,
+form select:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 10px rgba(79,172,254,0.6);
+}
+
+/* ✨ Кнопки остаются как есть, можно чуть светлее, если хочешь */
+.btn {
+    color: #fff;
+}
+</style>
+
 <h2>{{ task.title }}</h2>
 
 <p>{{ task.description }}</p>

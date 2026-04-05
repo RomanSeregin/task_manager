@@ -3,6 +3,7 @@ from .views import RegisterView
 from .views import UserListView, toggle_admin
 from .views import edit_comment, delete_comment
 from .views import mark_done
+from .views import NotificationListView
 from .views import (
     TaskListView,
     TaskCreateView,
@@ -35,4 +36,5 @@ urlpatterns = [
     path('comment/<int:comment_id>/edit/', edit_comment, name='edit_comment'),
     path('comment/<int:comment_id>/delete/', delete_comment, name='delete_comment'),
     path('<int:pk>/done/', mark_done, name='task_done'),
+    path('notifications/', NotificationListView.as_view(), name='notifications'),
 ]

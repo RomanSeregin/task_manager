@@ -9,6 +9,119 @@
 <style>
 
 /* ===== GLOBAL ===== */
+body{
+    margin:0;
+    font-family: Inter, system-ui, sans-serif;
+    background:#0e0e11;
+    color:#e5e7eb;
+}
+
+/* ===== SIDEBAR и MAIN ===== */
+/* ... твои старые стили остаются ... */
+
+/* ===== CONTENT ===== */
+.content{
+    padding:25px;
+}
+
+/* ===== TASK CARD ===== */
+.task-card {
+    background: rgba(255, 255, 255, 0.05); /* прозрачный тёмный фон */
+    color: #e5e7eb; /* светлый текст */
+    border-radius:15px;
+    padding:20px;
+    transition:0.3s;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.task-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+.task-card .task-title,
+.task-card p,
+.task-card span,
+.task-card strong {
+    color: #e5e7eb;
+}
+
+/* ===== COMMENTS ===== */
+.comment, .comment-body {
+    background: rgba(255, 255, 255, 0.05); 
+    color: #e5e7eb;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.comment .comment-user {
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+/* ===== ALERTS / УВЕДОМЛЕНИЯ ===== */
+.alert {
+    background: rgba(30, 30, 35, 0.8);
+    color: #e5e7eb !important;
+    border: 1px solid #444; 
+}
+
+.alert .btn-close {
+    filter: invert(1);
+}
+
+/* ===== INPUTS, TEXTAREA, SELECT ===== */
+input, select, textarea {
+    background: rgba(255,255,255,0.05);
+    color: #e5e7eb;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 8px;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+select option {
+    background: #111114;
+    color: #e5e7eb;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 10px rgba(79,172,254,0.6);
+}
+
+/* ===== BUTTONS ===== */
+.btn{
+    border-radius:8px;
+}
+
+/* ===== OTHER STYLES ===== */
+/* оставь свои старые стили, например topbar, stats, welcome-box и т.д. */
+
+/* === Прозрачные поля === */
+input.form-control,
+textarea.form-control,
+select.form-select {
+    background: rgba(255, 255, 255, 0.05); /* почти прозрачный */
+    color: #e5e7eb; /* текст светлый */
+    border: 1px solid #333; /* рамка тёмная */
+}
+
+input.form-control::placeholder,
+textarea.form-control::placeholder {
+    color: #999; /* светло-серый placeholder */
+}
+
+/* Кнопки оставить прежние или под цвет темы */
+.btn {
+    border-radius: 8px;
+}
+/* ===== GLOBAL ===== */
 
 body{
     margin:0;
@@ -47,7 +160,6 @@ body{
     width:70px;
 }
 
-/* mobile hidden */
 .sidebar.mobile-hidden{
     transform:translateX(-100%);
 }
@@ -212,6 +324,19 @@ body{
     background:#2a1414;
 }
 
+/* 🔔 уведомления */
+
+.notification-badge{
+    position:absolute;
+    top:-6px;
+    right:-10px;
+    background:red;
+    color:white;
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:10px;
+}
+
 </style>
 </head>
 
@@ -235,13 +360,18 @@ body{
 <a href="{% url 'task_create' %}" class="{% if 'create' in request.path %}active{% endif %}">
 ➕ <span>Создать</span>
 </a>
+
+<a href="{% url 'notifications' %}">
+🔔 <span>Уведомления</span>
+</a>
+
 </div>
 
 {% if user.is_staff %}
 <div class="menu-section">
 <div class="menu-title">Админ</div>
 
-<a href="{% url 'user_list' %}" class="{% if 'users' in request.path %}active{% endif %}">
+<a href="{% url 'user_list' %}">
 👥 <span>Пользователи</span>
 </a>
 </div>
@@ -275,12 +405,39 @@ body{
 
 <div>Task Manager</div>
 
+<!-- 🔔 уведомления -->
+
+<div style="position:relative;">
+
+    <a href="{% url 'notifications' %}" style="color:white; font-size:18px; text-decoration:none;">
+        🔔
+    </a>
+
+    {% if unread_notifications > 0 %}
+        <span class="notification-badge">
+            {{ unread_notifications }}
+        </span>
+    {% endif %}
+
+</div>
+
 </div>
 
 
 <!-- CONTENT -->
 
 <div class="content">
+
+{% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 {% block content %}
 {% endblock %}
@@ -300,14 +457,10 @@ const main = document.getElementById("main");
 
 btn.onclick = () => {
 
-    // desktop collapse
     if(window.innerWidth > 768){
         sidebar.classList.toggle("collapsed");
         main.classList.toggle("full");
-    }
-
-    // mobile slide
-    else{
+    } else {
         sidebar.classList.toggle("mobile-hidden");
     }
 };

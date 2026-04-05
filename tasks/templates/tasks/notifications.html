@@ -1,0 +1,46 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+
+
+<style>
+/* 🔔 Карточки уведомлений */
+.card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #e5e7eb !important;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+}
+
+/* текст внутри */
+.card-body {
+    color: #e5e7eb !important;
+}
+
+/* дата */
+.card-body small {
+    color: rgba(255,255,255,0.6);
+}
+
+/* hover эффект (чтоб было красиво) */
+.card:hover {
+    transform: translateY(-3px);
+    transition: 0.2s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+</style>
+<h2>Уведомления</h2>
+
+{% for notification in notifications %}
+    <div class="card mb-2">
+        <div class="card-body">
+            {{ notification.message }}
+            <br>
+            <small>{{ notification.created_at|date:"d.m.Y H:i" }}</small>
+        </div>
+    </div>
+{% empty %}
+    <p>Нет уведомлений</p>
+{% endfor %}
+
+{% endblock %}
