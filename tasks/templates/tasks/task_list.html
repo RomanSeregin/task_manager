@@ -2,130 +2,351 @@
 
 {% block content %}
 
-<div class="mb-3">
+<style>
 
-    <span class="badge bg-primary">
-        Всего: {{ total }}
-    </span>
+/* ===== WELCOME ===== */
 
-    <span class="badge bg-success">
-        Выполнено: {{ done }}
-    </span>
+.welcome{
+    padding:24px;
+    border-radius:12px;
+    border:1px solid #1f1f23;
+    background:#111114;
+    margin-bottom:20px;
+}
 
-    <span class="badge bg-warning">
-        В процессе: {{ in_progress }}
-    </span>
+.welcome h2{
+    font-size:20px;
+    margin-bottom:6px;
+}
 
-    <span class="badge bg-secondary">
-        Новые: {{ new }}
-    </span>
+.welcome p{
+    color:#9ca3af;
+    margin-bottom:15px;
+}
+
+/* ===== BUTTON GROUP ===== */
+
+.actions{
+    display:flex;
+    gap:10px;
+}
+
+/* ===== STATS ===== */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px;
+    margin-bottom:25px;
+}
+
+.stat{
+    border:1px solid #1f1f23;
+    background:#111114;
+    padding:14px;
+    border-radius:10px;
+}
+
+.stat-title{
+    font-size:12px;
+    color:#6b7280;
+}
+
+.stat-value{
+    font-size:20px;
+    font-weight:600;
+}
+
+
+/* ===== FILTER ===== */
+
+.filter{
+    border:1px solid #1f1f23;
+    background:#111114;
+    padding:16px;
+    border-radius:12px;
+    margin-bottom:25px;
+}
+
+.filter input,
+.filter select{
+    background:#0e0e11;
+    border:1px solid #2a2a30;
+    color:#e5e7eb;
+}
+
+.filter input:focus,
+.filter select:focus{
+    border-color:#3b82f6;
+    box-shadow:none;
+}
+
+/* ===== TASKS ===== */
+
+.tasks{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:16px;
+}
+
+/* ===== CARD ===== */
+
+.task{
+    border:1px solid #1f1f23;
+    background:#111114;
+    padding:16px;
+    border-radius:12px;
+    transition:0.2s;
+}
+
+.task:hover{
+    border-color:#2a2a30;
+    transform:translateY(-3px);
+}
+
+/* ===== TITLE ===== */
+
+.task-title{
+    font-weight:600;
+    margin-bottom:8px;
+}
+
+/* ===== META ===== */
+
+.meta{
+    font-size:13px;
+    color:#9ca3af;
+    margin-bottom:8px;
+}
+
+/* ===== PRIORITY ===== */
+
+.priority-high{ color:#ef4444; }
+.priority-medium{ color:#f59e0b; }
+.priority-low{ color:#10b981; }
+
+/* ===== PROGRESS ===== */
+
+.progress{
+    height:6px;
+    background:#1f1f23;
+    border-radius:6px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    background:#3b82f6;
+}
+
+/* ===== BUTTONS ===== */
+
+.task-actions{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+}
+
+.btn-sm{
+    padding:4px 8px;
+    font-size:12px;
+}
+
+</style>
+
+
+<!-- ===== WELCOME ===== -->
+
+<div class="welcome">
+
+<h2>👋 Привет, {{ user.username }}</h2>
+
+<p>Управляй задачами и отслеживай прогресс</p>
+
+<div class="actions">
+
+<a href="{% url 'task_create' %}" class="btn btn-primary">
+Создать задачу
+</a>
+
+<a href="#tasks" class="btn btn-outline-light">
+К задачам
+</a>
 
 </div>
 
-<h2 class="mb-3">Список задач</h2>
+</div>
 
-<!-- 🔍 ФИЛЬТР + ПОИСК + СОРТИРОВКА -->
-<form method="get" class="mb-4">
 
-    <!-- 🔍 Поиск -->
-    <input type="text" name="search" placeholder="Поиск..." 
-           class="form-control mb-2" value="{{ request.GET.search }}">
+<!-- ===== STATS ===== -->
 
-    <!-- 📊 Статус -->
-    <select name="status" class="form-control mb-2">
-        <option value="">Все статусы</option>
-        <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>Новое</option>
-        <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В процессе</option>
-        <option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>Выполнено</option>
-    </select>
+<div class="stats">
 
-    <!-- 🔥 Приоритет -->
-    <select name="priority" class="form-control mb-2">
-        <option value="">Все приоритеты</option>
-        <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Низкий</option>
-        <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Средний</option>
-        <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>Высокий</option>
-    </select>
+<div class="stat">
+<div class="stat-title">Всего</div>
+<div class="stat-value">{{ total }}</div>
+</div>
 
-    <!-- 📅 Дата -->
-    <input type="date" name="due_date" class="form-control mb-2"
-           value="{{ request.GET.due_date }}">
+<div class="stat">
+<div class="stat-title">Выполнено</div>
+<div class="stat-value">{{ done }}</div>
+</div>
 
-    <!-- 🔽 Сортировка -->
-    <select name="order" class="form-control mb-2">
-        <option value="">Сортировка</option>
+<div class="stat">
+<div class="stat-title">В процессе</div>
+<div class="stat-value">{{ in_progress }}</div>
+</div>
 
-        <option value="due_date" {% if request.GET.order == 'due_date' %}selected{% endif %}>
-            📅 Сначала старые
-        </option>
+<div class="stat">
+<div class="stat-title">Новые</div>
+<div class="stat-value">{{ new }}</div>
+</div>
 
-        <option value="-due_date" {% if request.GET.order == '-due_date' %}selected{% endif %}>
-            📅 Сначала новые
-        </option>
+</div>
 
-        <option value="priority" {% if request.GET.order == 'priority' %}selected{% endif %}>
-            🔥 Приоритет (низкий → высокий)
-        </option>
 
-        <option value="-priority" {% if request.GET.order == '-priority' %}selected{% endif %}>
-            🔥 Приоритет (высокий → низкий)
-        </option>
+<!-- ===== FILTER ===== -->
 
-        <option value="title" {% if request.GET.order == 'title' %}selected{% endif %}>
-            🔤 По названию
-        </option>
-    </select>
+<div class="filter">
 
-    <button type="submit" class="btn btn-primary">Применить</button>
-    <a href="{% url 'task_list' %}" class="btn btn-secondary">Сбросить</a>
+<form method="get">
+
+<div class="row g-2">
+
+<div class="col-md-3">
+<input type="text" name="search" placeholder="Поиск..." class="form-control"
+value="{{ request.GET.search }}">
+</div>
+
+<div class="col-md-2">
+<select name="status" class="form-control">
+<option value="">Статус</option>
+<option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>Новое</option>
+<option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>В процессе</option>
+<option value="done" {% if request.GET.status == 'done' %}selected{% endif %}>Выполнено</option>
+</select>
+</div>
+
+<div class="col-md-2">
+<select name="priority" class="form-control">
+<option value="">Приоритет</option>
+<option value="low">Низкий</option>
+<option value="medium">Средний</option>
+<option value="high">Высокий</option>
+</select>
+</div>
+
+<div class="col-md-2">
+<input type="date" name="due_date" class="form-control"
+value="{{ request.GET.due_date }}">
+</div>
+
+<div class="col-md-2">
+<select name="order" class="form-control">
+<option value="">Сортировка</option>
+<option value="due_date">Старые</option>
+<option value="-due_date">Новые</option>
+<option value="priority">Приоритет ↑</option>
+<option value="-priority">Приоритет ↓</option>
+</select>
+</div>
+
+<div class="col-md-1">
+<button class="btn btn-primary w-100">OK</button>
+</div>
+
+</div>
+
+<a href="{% url 'task_list' %}" class="btn btn-outline-light btn-sm mt-2">
+Сбросить
+</a>
 
 </form>
 
-<!-- 📋 СПИСОК ЗАДАЧ -->
+</div>
+
+
+<!-- ===== TASKS ===== -->
+
+<div id="tasks" class="tasks">
+
 {% for task in tasks %}
-    <div class="card mb-3 shadow-sm">
-        <div class="card-body">
 
-            <h5>{{ task.title }}</h5>
-            <p>{{ task.description }}</p>
+<div class="task">
 
-            <!-- 🎨 Статус -->
-            <p>
-                <strong>Статус:</strong>
-                <span class="
-                    {% if task.status == 'new' %}badge bg-secondary
-                    {% elif task.status == 'in_progress' %}badge bg-warning
-                    {% elif task.status == 'done' %}badge bg-success
-                    {% endif %}
-                ">
-                    {{ task.status }}
-                </span>
-            </p>
+<div class="task-title">{{ task.title }}</div>
 
-            <!-- 🔥 Приоритет -->
-            <p><strong>Приоритет:</strong> {{ task.priority }}</p>
+<div class="meta">
+{{ task.description|truncatechars:100 }}
+</div>
 
-            <!-- 📅 Срок -->
-            <p><strong>Срок:</strong> {{ task.due_date }}</p>
+<div class="meta">
+Статус:
+<span class="badge bg-dark border">
+{{ task.get_status_display }}
+</span>
+</div>
 
-            <!-- 🔘 Кнопки -->
-            <a href="{% url 'task_detail' task.id %}" class="btn btn-info btn-sm">Подробнее</a>
+<div class="meta">
+Приоритет:
+<span class="
+{% if task.priority == 'high' %}priority-high
+{% elif task.priority == 'medium' %}priority-medium
+{% else %}priority-low
+{% endif %}
+">
+{{ task.priority }}
+</span>
+</div>
 
-            {% if request.user == task.user or request.user in task.admins.all or request.user.is_staff %}
-                <a href="{% url 'task_update' task.id %}" class="btn btn-warning btn-sm">Редактировать</a>
-                <a href="{% url 'task_delete' task.id %}" class="btn btn-danger btn-sm">Удалить</a>
-                {% if task.status != 'done' %}
-                <a href="{% url 'task_done' task.id %}" class="btn btn-success btn-sm">
-                    ✔ Выполнено
-                </a>
-            {% endif %}
-        {% endif %}
+<div class="meta">
+📅 {{ task.due_date }}
+</div>
 
-        </div>
-    </div>
+<div class="progress">
+<div class="progress-bar"
+style="width:
+{% if task.status == 'done' %}100%
+{% elif task.status == 'in_progress' %}60%
+{% else %}20%
+{% endif %}">
+</div>
+</div>
+
+<div class="task-actions">
+
+<a href="{% url 'task_detail' task.id %}" class="btn btn-outline-light btn-sm">
+Открыть
+</a>
+
+{% if request.user == task.user or request.user in task.admins.all or request.user.is_staff %}
+
+<a href="{% url 'task_update' task.id %}" class="btn btn-outline-warning btn-sm">
+Изменить
+</a>
+
+<a href="{% url 'task_delete' task.id %}" class="btn btn-outline-danger btn-sm">
+Удалить
+</a>
+
+{% if task.status != 'done' %}
+<a href="{% url 'task_done' task.id %}" class="btn btn-outline-success btn-sm">
+✔
+</a>
+{% endif %}
+
+{% endif %}
+
+</div>
+
+</div>
 
 {% empty %}
-    <p>Нет задач</p>
+
+<p style="color:#9ca3af">Нет задач</p>
+
 {% endfor %}
+
+</div>
 
 {% endblock %}

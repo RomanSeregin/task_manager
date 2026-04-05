@@ -20,7 +20,11 @@ from django.shortcuts import render
 
 
 # 📋 Список задач
-class TaskListView(LoginRequiredMixin, ListView):
+from django.views.generic import ListView
+from .models import Task
+from datetime import date
+
+class TaskListView(ListView):
     model = Task
     template_name = 'tasks/task_list.html'
     context_object_name = 'tasks'
@@ -28,30 +32,49 @@ class TaskListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = Task.objects.all()
 
-        # 🔍 поиск (если есть)
+        # 🔍 ПОИСК
         search = self.request.GET.get('search')
         if search:
-            queryset = queryset.filter(title__icontains=search) | queryset.filter(description__icontains=search)
+            queryset = queryset.filter(
+                title__icontains=search
+            ) | queryset.filter(
+                description__icontains=search
+            )
 
-        # 🔽 сортировка
+        # 📊 ФИЛЬТРЫ
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        priority = self.request.GET.get('priority')
+        if priority:
+            queryset = queryset.filter(priority=priority)
+
+        due_date = self.request.GET.get('due_date')
+        if due_date:
+            queryset = queryset.filter(due_date=due_date)
+
+        # 🔽 СОРТИРОВКА
         order = self.request.GET.get('order')
-
-        if order == 'due_date':
-            queryset = queryset.order_by('due_date')
-
-        elif order == '-due_date':
-            queryset = queryset.order_by('-due_date')
-
-        elif order == 'priority':
-            queryset = queryset.order_by('priority')
-
-        elif order == '-priority':
-            queryset = queryset.order_by('-priority')
-
-        elif order == 'title':
-            queryset = queryset.order_by('title')
+        if order:
+            queryset = queryset.order_by(order)
 
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        queryset = self.get_queryset()  # 👈 ВАЖНО!
+
+        # 📊 СТАТИСТИКА (по текущему фильтру)
+        context['total'] = queryset.count()
+        context['done'] = queryset.filter(status='done').count()
+        context['in_progress'] = queryset.filter(status='in_progress').count()
+        context['new'] = queryset.filter(status='new').count()
+
+        context['today'] = date.today()
+
+        return context
 
 @method_decorator(staff_member_required, name='dispatch')
 class UserListView(ListView):
